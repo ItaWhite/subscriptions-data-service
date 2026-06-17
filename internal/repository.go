@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -65,10 +66,13 @@ func (r *recordRepository) GetByID(ctx context.Context, id int) (Record, error) 
 	var record Record
 	err := r.db.QueryRow(ctx, "select * from records where id=$1", id).
 		Scan(&record.Id, &record.ServiceName, &record.Price, &record.UserID, &record.StartDate, &record.EndDate)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Record{}, errors.New("record not found")
+	}
 	if err != nil {
 		return Record{}, err
 	}
-	return record, err
+	return record, nil
 }
 
 func (r *recordRepository) Create(ctx context.Context, record Record) (Record, error) {
@@ -95,9 +99,12 @@ func (r *recordRepository) Update(ctx context.Context, id int, record Record) er
 }
 
 func (r *recordRepository) Delete(ctx context.Context, id int) error {
-	_, err := r.db.Exec(ctx, "delete from records where id=$1", id)
+	cmd, err := r.db.Exec(ctx, "delete from records where id=$1", id)
 	if err != nil {
 		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return errors.New("record not found")
 	}
 	return nil
 }

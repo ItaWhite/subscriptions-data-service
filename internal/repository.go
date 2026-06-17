@@ -81,15 +81,15 @@ values ($1, $2, $3, $4, $5) returning id;`, record.ServiceName, record.Price, re
 	return record, nil
 }
 
-func (r *recordRepository) Update(id int, record Record) (Record, error) {
+func (r *recordRepository) Update(id int, record Record) error {
 	cmd, err := r.db.Exec(context.Background(), "update records set service_name=$1, price=$2, user_id=$3, start_date=$4, end_date=$5 where id=$6",
 		record.ServiceName, record.Price, record.UserID, record.StartDate, record.EndDate, id)
 	if err != nil {
-		return Record{}, err
+		return err
 	}
 	if cmd.RowsAffected() == 0 {
-		return Record{}, errors.New("record not found")
+		return errors.New("record not found")
 	}
 	record.Id = id
-	return record, err
+	return err
 }

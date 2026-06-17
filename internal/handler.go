@@ -66,11 +66,10 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	var record Record
 	json.NewDecoder(r.Body).Decode(&record)
 	defer r.Body.Close()
-	record, err = h.service.Update(id, record)
+	err = h.service.Update(id, record)
 	if err != nil {
 		http.Error(w, "ошибка обновления записи", http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
-	json.NewEncoder(w).Encode(record)
 }

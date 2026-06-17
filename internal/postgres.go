@@ -6,12 +6,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ConnectDb(url string) (*pgxpool.Pool, error) {
-	db, err := pgxpool.New(context.Background(), url)
+func ConnectDb(ctx context.Context, url string) (*pgxpool.Pool, error) {
+	db, err := pgxpool.New(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	err = db.Ping(context.Background())
+	err = db.Ping(ctx)
 	if err != nil {
 		return nil, err
 	}

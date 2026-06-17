@@ -51,8 +51,8 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "ошибка создания записи", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(record)
 }
 
@@ -70,7 +70,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		http.Error(w, "ошибка обновления записи", http.StatusInternalServerError)
 	}
-	w.WriteHeader(http.StatusNoContent)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 	json.NewEncoder(w).Encode(record)
 }

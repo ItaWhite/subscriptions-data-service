@@ -69,6 +69,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	err = h.service.Update(id, record)
 	if err != nil {
 		http.Error(w, "ошибка обновления записи", http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)

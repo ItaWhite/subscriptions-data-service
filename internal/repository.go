@@ -43,8 +43,8 @@ drop table if exists records;
 	return err
 }
 
-func (r *recordRepository) GetAll() ([]Record, error) {
-	rows, err := r.db.Query(context.Background(), "select * from records;")
+func (r *recordRepository) GetAll(ctx context.Context) ([]Record, error) {
+	rows, err := r.db.Query(ctx, "select * from records;")
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +61,9 @@ func (r *recordRepository) GetAll() ([]Record, error) {
 	return recordList, nil
 }
 
-func (r *recordRepository) GetByID(id int) (Record, error) {
+func (r *recordRepository) GetByID(ctx context.Context, id int) (Record, error) {
 	var record Record
-	err := r.db.QueryRow(context.Background(), "select * from records where id=$1", id).
+	err := r.db.QueryRow(ctx, "select * from records where id=$1", id).
 		Scan(&record.Id, &record.ServiceName, &record.Price, &record.UserID, &record.StartDate, &record.EndDate)
 	if err != nil {
 		return Record{}, err
@@ -71,8 +71,8 @@ func (r *recordRepository) GetByID(id int) (Record, error) {
 	return record, err
 }
 
-func (r *recordRepository) Create(record Record) (Record, error) {
-	err := r.db.QueryRow(context.Background(), `
+func (r *recordRepository) Create(ctx context.Context, record Record) (Record, error) {
+	err := r.db.QueryRow(ctx, `
 insert into records (service_name, price, user_id, start_date, end_date) 
 values ($1, $2, $3, $4, $5) returning id;`, record.ServiceName, record.Price, record.UserID, record.StartDate, record.EndDate).Scan(&record.Id)
 	if err != nil {
@@ -81,8 +81,8 @@ values ($1, $2, $3, $4, $5) returning id;`, record.ServiceName, record.Price, re
 	return record, nil
 }
 
-func (r *recordRepository) Update(id int, record Record) error {
-	cmd, err := r.db.Exec(context.Background(), "update records set service_name=$1, price=$2, user_id=$3, start_date=$4, end_date=$5 where id=$6",
+func (r *recordRepository) Update(ctx context.Context, id int, record Record) error {
+	cmd, err := r.db.Exec(ctx, "update records set service_name=$1, price=$2, user_id=$3, start_date=$4, end_date=$5 where id=$6",
 		record.ServiceName, record.Price, record.UserID, record.StartDate, record.EndDate, id)
 	if err != nil {
 		return err
@@ -94,8 +94,8 @@ func (r *recordRepository) Update(id int, record Record) error {
 	return err
 }
 
-func (r *recordRepository) Delete(id int) error {
-	_, err := r.db.Exec(context.Background(), "delete from records where id=$1", id)
+func (r *recordRepository) Delete(ctx context.Context, id int) error {
+	_, err := r.db.Exec(ctx, "delete from records where id=$1", id)
 	if err != nil {
 		return err
 	}

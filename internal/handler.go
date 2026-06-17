@@ -17,7 +17,7 @@ func NewRecordHandler(s *recordService) *recordHandler {
 }
 
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
-	recordList, err := h.service.GetAll()
+	recordList, err := h.service.GetAll(r.Context())
 	if err != nil {
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
@@ -33,7 +33,7 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
-	record, err := h.service.GetByID(id)
+	record, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
@@ -46,7 +46,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 	var record Record
 	json.NewDecoder(r.Body).Decode(&record)
 	defer r.Body.Close()
-	record, err := h.service.Create(record)
+	record, err := h.service.Create(r.Context(), record)
 	if err != nil {
 		http.Error(w, "ошибка создания записи", http.StatusInternalServerError)
 		return
@@ -66,7 +66,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	var record Record
 	json.NewDecoder(r.Body).Decode(&record)
 	defer r.Body.Close()
-	err = h.service.Update(id, record)
+	err = h.service.Update(r.Context(), id, record)
 	if err != nil {
 		http.Error(w, "ошибка обновления записи", http.StatusInternalServerError)
 		return
@@ -82,7 +82,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
-	err = h.service.Delete(id)
+	err = h.service.Delete(r.Context(), id)
 	if err != nil {
 		http.Error(w, "ошибка удаления записи", http.StatusInternalServerError)
 		return

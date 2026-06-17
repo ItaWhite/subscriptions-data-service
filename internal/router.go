@@ -8,5 +8,6 @@ func Router(h *recordHandler) *http.ServeMux {
 	mux.HandleFunc("GET /records/{id}", h.GetRecordHandler)
 	mux.HandleFunc("POST /records", h.PostRecordHandler)
 	mux.HandleFunc("PUT /records/{id}", h.PutRecordHandler)
+	mux.HandleFunc("DELETE /records/{id}", h.DeleteRecordHandler)
 	return mux
 }

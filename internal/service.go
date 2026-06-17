@@ -25,3 +25,7 @@ func (s *recordService) Create(record Record) (Record, error) {
 func (s *recordService) Update(id int, record Record) error {
 	return s.repo.Update(id, record)
 }
+
+func (s *recordService) Delete(id int) error {
+	return s.repo.Delete(id)
+}

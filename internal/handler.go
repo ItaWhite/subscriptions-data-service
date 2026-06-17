@@ -73,3 +73,18 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Request) {
+	strId := r.PathValue("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		http.Error(w, "некорректный id", http.StatusBadRequest)
+		return
+	}
+	err = h.service.Delete(id)
+	if err != nil {
+		http.Error(w, "ошибка удаления записи", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

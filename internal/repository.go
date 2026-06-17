@@ -93,3 +93,11 @@ func (r *recordRepository) Update(id int, record Record) error {
 	record.Id = id
 	return err
 }
+
+func (r *recordRepository) Delete(id int) error {
+	_, err := r.db.Exec(context.Background(), "delete from records where id=$1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

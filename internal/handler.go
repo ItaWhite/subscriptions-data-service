@@ -55,3 +55,22 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(record)
 }
+
+func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request) {
+	strId := r.PathValue("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		http.Error(w, "некорректный id", http.StatusBadRequest)
+		return
+	}
+	var record Record
+	json.NewDecoder(r.Body).Decode(&record)
+	defer r.Body.Close()
+	record, err = h.service.Update(id, record)
+	if err != nil {
+		http.Error(w, "ошибка обновления записи", http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(record)
+}

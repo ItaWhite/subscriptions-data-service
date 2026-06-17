@@ -21,3 +21,7 @@ func (s *recordService) GetByID(id int) (Record, error) {
 func (s *recordService) Create(record Record) (Record, error) {
 	return s.repo.Create(record)
 }
+
+func (s *recordService) Update(id int, record Record) (Record, error) {
+	return s.repo.Update(id, record)
+}

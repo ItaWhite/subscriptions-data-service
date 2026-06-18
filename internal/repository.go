@@ -22,32 +22,6 @@ func NewRecordRepository(pool *pgxpool.Pool) *recordRepository {
 	}
 }
 
-func (r *recordRepository) InitSchema() error {
-	_, err := r.db.Exec(context.Background(), `
-create table if not exists records(
-    id int generated always as identity primary key,
-    service_name varchar(255) not null,
-    price int not null,
-    user_id uuid not null,
-    start_date date not null,
-    end_date date
-);`)
-	if err != nil {
-		return err
-	}
-
-	_, err = r.db.Exec(context.Background(), `
-insert into records (service_name, price, user_id, start_date, end_date) values ('Yandex Plus', 400, '60601fee-2bf1-4721-ae6f-7636e79a0cba', '2026-01-01', '2026-07-01');`)
-	return err
-}
-
-func (r *recordRepository) DropSchema() error {
-	_, err := r.db.Exec(context.Background(), `
-drop table if exists records;
-`)
-	return err
-}
-
 func (r *recordRepository) GetAll(ctx context.Context) ([]Record, error) {
 	rows, err := r.db.Query(ctx, "select * from records;")
 	if err != nil {

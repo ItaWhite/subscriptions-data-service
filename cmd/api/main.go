@@ -29,15 +29,6 @@ func main() {
 	defer db.Close()
 	r := internal.NewRecordRepository(db)
 
-	err = r.DropSchema()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = r.InitSchema()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	s := internal.NewRecordService(r)
 	h := internal.NewRecordHandler(s)
 

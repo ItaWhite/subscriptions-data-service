@@ -1,6 +1,9 @@
 package internal
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type recordService struct {
 	repo *recordRepository
@@ -30,4 +33,8 @@ func (s *recordService) Update(ctx context.Context, id int, record Record) error
 
 func (s *recordService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *recordService) TotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
+	return s.repo.GetTotalPrice(ctx, userIDStr, serviceName, from, to)
 }

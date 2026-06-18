@@ -3,6 +3,8 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -109,4 +111,24 @@ func (r *recordRepository) Delete(ctx context.Context, id int) error {
 		return ErrRecordNotFound
 	}
 	return nil
+}
+
+func (r *recordRepository) GetTotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
+	query := "select sum(price) from records where 1=1"
+	var args []any
+	if userIDStr != "" {
+		args = append(args, userIDStr)
+		query += fmt.Sprintf(" and user_id=$%d", len(args))
+	}
+	if serviceName != "" {
+		args = append(args, serviceName)
+		query += fmt.Sprintf(" and service_name=$%d", len(args))
+	}
+
+	var total int
+	err := r.db.QueryRow(ctx, query, args...).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }

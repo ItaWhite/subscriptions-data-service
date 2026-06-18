@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -176,4 +177,30 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	userIDStr := q.Get("user_id")
+	serviceName := q.Get("service_name")
+	fromStr := q.Get("from")
+	toStr := q.Get("to")
+	from, err := parseMonthYear(fromStr)
+	if err != nil {
+		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
+		return
+	}
+	to, err := parseMonthYear(toStr)
+	if err != nil {
+		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
+		return
+	}
+	total, err := h.service.TotalPrice(r.Context(), userIDStr, serviceName, from, to)
+	if err != nil {
+		slog.Error("GetTotalPrice", "error", err)
+		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"total": total})
 }

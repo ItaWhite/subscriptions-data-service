@@ -113,9 +113,10 @@ func (r *recordRepository) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *recordRepository) GetTotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
-	query := "select sum(price) from records where 1=1"
-	var args []any
+func (r *recordRepository) GetPricesInRange(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) ([]Record, error) {
+	query := "select price, start_date, end_date from records"
+	args := []any{from, to}
+	query += " where (end_date is null or end_date >= $1) and start_date <= $2"
 	if userIDStr != "" {
 		args = append(args, userIDStr)
 		query += fmt.Sprintf(" and user_id=$%d", len(args))
@@ -125,10 +126,19 @@ func (r *recordRepository) GetTotalPrice(ctx context.Context, userIDStr string, 
 		query += fmt.Sprintf(" and service_name=$%d", len(args))
 	}
 
-	var total int
-	err := r.db.QueryRow(ctx, query, args...).Scan(&total)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return total, nil
+	defer rows.Close()
+	var pricesWithDates []Record
+	for rows.Next() {
+		var priceWithDates Record
+		err = rows.Scan(&priceWithDates.Price, &priceWithDates.StartDate, &priceWithDates.EndDate)
+		if err != nil {
+			return nil, err
+		}
+		pricesWithDates = append(pricesWithDates, priceWithDates)
+	}
+	return pricesWithDates, nil
 }

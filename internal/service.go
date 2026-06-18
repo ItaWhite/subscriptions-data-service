@@ -35,6 +35,38 @@ func (s *recordService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
 }
 
+func countMonth(from, to, start time.Time, end *time.Time) int {
+	var endVal time.Time
+	if end == nil {
+		endVal = to
+	} else {
+		endVal = *end
+	}
+	if endVal.After(to) {
+		endVal = to
+	}
+	if start.Before(from) {
+		start = from
+	}
+	if start.After(endVal) {
+		return 0
+	}
+	months := (endVal.Year()-start.Year())*12 + int(endVal.Month()-start.Month()) + 1
+	return months
+
+}
+
 func (s *recordService) TotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
-	return s.repo.GetTotalPrice(ctx, userIDStr, serviceName, from, to)
+	pricesWithDates, err := s.repo.GetPricesInRange(ctx, userIDStr, serviceName, from, to)
+	if err != nil {
+		return 0, err
+	}
+
+	var total int
+	for _, pwd := range pricesWithDates {
+		price, start, end := pwd.Price, pwd.StartDate, pwd.EndDate
+		total += price * countMonth(from, to, start, end)
+	}
+
+	return total, nil
 }

@@ -132,13 +132,13 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 		"path", r.URL.Path,
 	)
 	var dto RecordDto
+	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
 	record, err := toModel(dto)
 	if err != nil {
 		logger.Error("parse dto failed", "error", err)
@@ -173,13 +173,13 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	var dto RecordDto
+	defer r.Body.Close()
 	err = json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
 	record, err := toModel(dto)
 	if err != nil {
 		logger.Error("parse dto failed", "id", id, "error", err)

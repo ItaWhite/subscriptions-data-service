@@ -73,8 +73,13 @@ func toDto(record Record) RecordDto {
 }
 
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	recordList, err := h.service.GetAll(r.Context())
 	if err != nil {
+		logger.Error("get records failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
@@ -83,103 +88,151 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 	for _, r := range recordList {
 		dtoList = append(dtoList, toDto(r))
 	}
-	json.NewEncoder(w).Encode(dtoList)
+	logger.Info("records found", "count", len(dtoList))
+	err = json.NewEncoder(w).Encode(dtoList)
+	if err != nil {
+		logger.Error("error encoding dtoList", "error", err)
+	}
 }
 
 func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		logger.Warn("invalid id", "strId", strId)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
 	record, err := h.service.GetByID(r.Context(), id)
 	switch {
 	case errors.Is(err, ErrRecordNotFound):
+		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
 	case err != nil:
+		logger.Error("get record failed", "id", id, "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+	logger.Info("record found", "id", id)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(toDto(record))
+	err = json.NewEncoder(w).Encode(toDto(record))
+	if err != nil {
+		logger.Error("error encoding dto", "err", err)
+	}
 }
 
 func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	var dto RecordDto
 	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
+		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 	record, err := toModel(dto)
 	if err != nil {
+		logger.Error("parse dto failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
 	record, err = h.service.Create(r.Context(), record)
 	if err != nil {
+		logger.Error("create record failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+	logger.Info("record created", "id", record.Id)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(toDto(record))
+	err = json.NewEncoder(w).Encode(toDto(record))
+	if err != nil {
+		logger.Error("error encoding dto", "err", err)
+	}
 }
 
 func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		logger.Warn("invalid id", "strId", strId)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
 	var dto RecordDto
 	err = json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
+		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 	record, err := toModel(dto)
 	if err != nil {
+		logger.Error("parse dto failed", "id", id, "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
 	err = h.service.Update(r.Context(), id, record)
 	switch {
 	case errors.Is(err, ErrRecordNotFound):
+		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
 	case err != nil:
+		logger.Error("update record failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+	logger.Info("record updated", "id", id)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		logger.Warn("invalid id", "strId", strId)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
 	err = h.service.Delete(r.Context(), id)
 	switch {
 	case errors.Is(err, ErrRecordNotFound):
+		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
 	case err != nil:
+		logger.Error("delete record failed", "id", id, "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+	logger.Info("record deleted", "id", id)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
+	logger := slog.With(
+		"method", r.Method,
+		"path", r.URL.Path,
+	)
 	q := r.URL.Query()
 	userIDStr := q.Get("user_id")
 	serviceName := q.Get("service_name")
@@ -187,20 +240,26 @@ func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 	toStr := q.Get("to")
 	from, err := parseMonthYear(fromStr)
 	if err != nil {
+		logger.Warn("invalid date", "fromStr", fromStr)
 		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
 		return
 	}
 	to, err := parseMonthYear(toStr)
 	if err != nil {
+		logger.Warn("invalid date", "toStr", toStr)
 		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
 		return
 	}
 	total, err := h.service.TotalPrice(r.Context(), userIDStr, serviceName, from, to)
 	if err != nil {
-		slog.Error("GetTotalPrice", "error", err)
+		logger.Error("get total price failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+	logger.Info("total price calculated", "total", total)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]int{"total": total})
+	err = json.NewEncoder(w).Encode(map[string]int{"total": total})
+	if err != nil {
+		logger.Error("error encoding map of total", "error", err)
+	}
 }

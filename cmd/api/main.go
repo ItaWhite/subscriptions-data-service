@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,11 +29,10 @@ func main() {
 		log.Fatal("error connecting to database")
 	}
 	defer db.Close()
-	r := internal.NewRecordRepository(db)
 
+	r := internal.NewRecordRepository(db)
 	s := internal.NewRecordService(r)
 	h := internal.NewRecordHandler(s)
-
 	mux := internal.Router(h)
 
 	server := http.Server{
@@ -39,14 +40,23 @@ func main() {
 		Handler: mux,
 	}
 
-	fmt.Println("server started")
+	slog.Info("server started", "port", os.Getenv("SERVER_PORT"))
 	go func() {
-		log.Fatal(server.ListenAndServe())
+		err := server.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server failed", "error", err)
+			cancel()
+		}
 	}()
 
 	<-ctx.Done()
 
 	ctx, stop := context.WithTimeout(context.Background(), 5*time.Second)
 	defer stop()
-	log.Fatal(server.Shutdown(ctx))
+	err = server.Shutdown(ctx)
+	if err != nil {
+		slog.Error("shutdown error", "error", err)
+	} else {
+		slog.Info("server stopped")
+	}
 }

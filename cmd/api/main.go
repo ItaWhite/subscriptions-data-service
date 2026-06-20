@@ -24,7 +24,7 @@ func main() {
 		log.Fatal("error loading .env file", "error", err)
 	}
 
-	db, err := internal.ConnectDb(ctx, os.Getenv("POSTGRES_URL"))
+	db, err := internal.ConnectDb(ctx, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_DB"))
 	if err != nil {
 		log.Fatal("error connecting to database")
 	}

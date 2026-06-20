@@ -21,12 +21,12 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("error loading .env file", "error", err)
+		slog.Warn("error loading .env file", "error", err)
 	}
 
 	db, err := internal.ConnectDb(ctx, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_DB"))
 	if err != nil {
-		log.Fatal("error connecting to database")
+		log.Fatal("error connecting to database: ", err)
 	}
 	defer db.Close()
 

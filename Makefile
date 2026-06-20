@@ -21,3 +21,9 @@ migrate-up:
 
 migrate-down:
 	docker compose run --rm subscriptions-postgres-migrate -path /migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@subscriptions-postgres:5432/${POSTGRES_DB}?sslmode=disable down
+
+service-deploy:
+	docker compose up -d --build subscriptions-service
+
+service-stop:
+	docker compose down subscriptions-service

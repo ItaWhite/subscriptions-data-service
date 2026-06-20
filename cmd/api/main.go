@@ -19,7 +19,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	err := godotenv.Load("cmd/api/.env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error loading .env file", "error", err)
 	}

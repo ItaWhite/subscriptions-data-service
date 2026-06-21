@@ -2,11 +2,8 @@ package internal
 
 import (
 	"context"
-	"errors"
 	"time"
 )
-
-var ErrInvalidDates = errors.New("invalid dates")
 
 type recordService struct {
 	repo *recordRepository

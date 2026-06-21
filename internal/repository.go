@@ -10,8 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var ErrRecordNotFound = errors.New("record not found")
-
 type recordRepository struct {
 	db *pgxpool.Pool
 }

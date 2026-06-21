@@ -19,6 +19,7 @@ import (
 
 // @title Subscriptions Data Service
 // @host 127.0.0.1:8080
+// @BasePath /
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()

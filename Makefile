@@ -27,3 +27,6 @@ service-deploy:
 
 service-stop:
 	docker compose down subscriptions-service
+
+swagger-create:
+	docker compose run --rm swagger init -g cmd/api/main.go -o docs --parseInternal --parseDependency

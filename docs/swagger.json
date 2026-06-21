@@ -1,0 +1,9 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Subscriptions Data Service",
+        "contact": {}
+    },
+    "host": "127.0.0.1:8080",
+    "paths": {}
+}

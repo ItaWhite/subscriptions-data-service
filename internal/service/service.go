@@ -1,43 +1,46 @@
-package internal
+package service
 
 import (
 	"context"
+	serviceErrors "subscriptions-data-service/internal/errors"
+	"subscriptions-data-service/internal/model"
+	"subscriptions-data-service/internal/repository"
 	"time"
 )
 
-type recordService struct {
-	repo *recordRepository
+type RecordService struct {
+	repo *repository.RecordRepository
 }
 
-func NewRecordService(r *recordRepository) *recordService {
-	return &recordService{
+func NewRecordService(r *repository.RecordRepository) *RecordService {
+	return &RecordService{
 		repo: r,
 	}
 }
 
-func (s *recordService) GetAll(ctx context.Context) ([]Record, error) {
+func (s *RecordService) GetAll(ctx context.Context) ([]model.Record, error) {
 	return s.repo.GetAll(ctx)
 }
 
-func (s *recordService) GetByID(ctx context.Context, id int) (Record, error) {
+func (s *RecordService) GetByID(ctx context.Context, id int) (model.Record, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *recordService) Create(ctx context.Context, record Record) (Record, error) {
+func (s *RecordService) Create(ctx context.Context, record model.Record) (model.Record, error) {
 	if record.EndDate != nil && record.EndDate.Before(record.StartDate) {
-		return Record{}, ErrInvalidDates
+		return model.Record{}, serviceErrors.ErrInvalidDates
 	}
 	return s.repo.Create(ctx, record)
 }
 
-func (s *recordService) Update(ctx context.Context, id int, record Record) error {
+func (s *RecordService) Update(ctx context.Context, id int, record model.Record) error {
 	if record.EndDate != nil && record.EndDate.Before(record.StartDate) {
-		return ErrInvalidDates
+		return serviceErrors.ErrInvalidDates
 	}
 	return s.repo.Update(ctx, id, record)
 }
 
-func (s *recordService) Delete(ctx context.Context, id int) error {
+func (s *RecordService) Delete(ctx context.Context, id int) error {
 	return s.repo.Delete(ctx, id)
 }
 
@@ -62,9 +65,9 @@ func countMonth(from, to, start time.Time, end *time.Time) int {
 
 }
 
-func (s *recordService) TotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
+func (s *RecordService) TotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
 	if to.Before(from) {
-		return 0, ErrInvalidDates
+		return 0, serviceErrors.ErrInvalidDates
 	}
 	pricesWithDates, err := s.repo.GetPricesInRange(ctx, userIDStr, serviceName, from, to)
 	if err != nil {

@@ -1,8 +1,7 @@
-package internal
+package handler
 
 import (
 	"net/http"
-
 	_ "subscriptions-data-service/docs"
 
 	httpSwagger "github.com/swaggo/http-swagger"

@@ -1,4 +1,4 @@
-package internal
+package handler
 
 import (
 	"encoding/json"
@@ -7,16 +7,19 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	serviceErrors "subscriptions-data-service/internal/errors"
+	"subscriptions-data-service/internal/model"
+	"subscriptions-data-service/internal/service"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type recordHandler struct {
-	service *recordService
+	service *service.RecordService
 }
 
-func NewRecordHandler(s *recordService) *recordHandler {
+func NewRecordHandler(s *service.RecordService) *recordHandler {
 	return &recordHandler{
 		service: s,
 	}
@@ -30,24 +33,24 @@ func parseMonthYear(s string) (time.Time, error) {
 	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC), nil
 }
 
-func toModel(dto RecordDto) (Record, error) {
+func toModel(dto model.RecordDto) (model.Record, error) {
 	userId, err := uuid.Parse(dto.UserID)
 	if err != nil {
-		return Record{}, err
+		return model.Record{}, err
 	}
 	start, err := parseMonthYear(dto.StartDate)
 	if err != nil {
-		return Record{}, err
+		return model.Record{}, err
 	}
 	var end *time.Time
 	if dto.EndDate != "" {
 		t, err := parseMonthYear(dto.EndDate)
 		if err != nil {
-			return Record{}, err
+			return model.Record{}, err
 		}
 		end = &t
 	}
-	return Record{
+	return model.Record{
 		ServiceName: dto.ServiceName,
 		Price:       dto.Price,
 		UserID:      userId,
@@ -56,13 +59,13 @@ func toModel(dto RecordDto) (Record, error) {
 	}, nil
 }
 
-func toDto(record Record) RecordDto {
+func toDto(record model.Record) model.RecordDto {
 	start := fmt.Sprintf("%02d-%d", record.StartDate.Month(), record.StartDate.Year())
 	var end string
 	if record.EndDate != nil {
 		end = fmt.Sprintf("%02d-%d", record.EndDate.Month(), record.EndDate.Year())
 	}
-	return RecordDto{
+	return model.RecordDto{
 		Id:          record.Id,
 		ServiceName: record.ServiceName,
 		Price:       record.Price,
@@ -91,7 +94,7 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	dtoList := make([]RecordDto, 0, len(recordList))
+	dtoList := make([]model.RecordDto, 0, len(recordList))
 	for _, r := range recordList {
 		dtoList = append(dtoList, toDto(r))
 	}
@@ -126,7 +129,7 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 	}
 	record, err := h.service.GetByID(r.Context(), id)
 	switch {
-	case errors.Is(err, ErrRecordNotFound):
+	case errors.Is(err, serviceErrors.ErrRecordNotFound):
 		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
@@ -158,7 +161,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 		"method", r.Method,
 		"path", r.URL.Path,
 	)
-	var dto RecordDto
+	var dto model.RecordDto
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
@@ -174,7 +177,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 	}
 	record, err = h.service.Create(r.Context(), record)
 	switch {
-	case errors.Is(err, ErrInvalidDates):
+	case errors.Is(err, serviceErrors.ErrInvalidDates):
 		logger.Warn("invalid dates", "error", err)
 		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
 		return
@@ -215,7 +218,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
-	var dto RecordDto
+	var dto model.RecordDto
 	defer r.Body.Close()
 	err = json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
@@ -231,11 +234,11 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	}
 	err = h.service.Update(r.Context(), id, record)
 	switch {
-	case errors.Is(err, ErrInvalidDates):
+	case errors.Is(err, serviceErrors.ErrInvalidDates):
 		logger.Warn("invalid dates", "id", id, "error", err)
 		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
 		return
-	case errors.Is(err, ErrRecordNotFound):
+	case errors.Is(err, serviceErrors.ErrRecordNotFound):
 		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
@@ -271,7 +274,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 	}
 	err = h.service.Delete(r.Context(), id)
 	switch {
-	case errors.Is(err, ErrRecordNotFound):
+	case errors.Is(err, serviceErrors.ErrRecordNotFound):
 		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
 		return
@@ -320,7 +323,7 @@ func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 	}
 	total, err := h.service.TotalPrice(r.Context(), userIDStr, serviceName, from, to)
 	switch {
-	case errors.Is(err, ErrInvalidDates):
+	case errors.Is(err, serviceErrors.ErrInvalidDates):
 		logger.Warn("invalid date range", "from", from, "to", to)
 		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
 		return

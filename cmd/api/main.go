@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"subscriptions-data-service/internal"
+	"subscriptions-data-service/internal/handler"
+	"subscriptions-data-service/internal/repository"
+	"subscriptions-data-service/internal/service"
 	"time"
 
 	_ "subscriptions-data-service/docs"
@@ -29,16 +31,16 @@ func main() {
 		slog.Warn("error loading .env file", "error", err)
 	}
 
-	db, err := internal.ConnectDb(ctx, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_DB"))
+	db, err := repository.ConnectDb(ctx, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_DB"))
 	if err != nil {
 		log.Fatal("error connecting to database: ", err)
 	}
 	defer db.Close()
 
-	r := internal.NewRecordRepository(db)
-	s := internal.NewRecordService(r)
-	h := internal.NewRecordHandler(s)
-	mux := internal.Router(h)
+	r := repository.NewRecordRepository(db)
+	s := service.NewRecordService(r)
+	h := handler.NewRecordHandler(s)
+	mux := handler.Router(h)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),

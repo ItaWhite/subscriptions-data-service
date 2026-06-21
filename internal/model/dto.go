@@ -1,4 +1,4 @@
-package internal
+package model
 
 type RecordDto struct {
 	Id          int    `json:"id"`

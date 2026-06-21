@@ -72,6 +72,13 @@ func toDto(record Record) RecordDto {
 	}
 }
 
+// GetRecordsHandler
+// @Summary Получить список подписок
+// @Tags records
+// @Produce json
+// @Success 200 {array} RecordDto
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records [get]
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,
@@ -95,6 +102,16 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GetRecordHandler
+// @Summary Получить подписку по ID
+// @Tags records
+// @Produce json
+// @Param id path int true "ID записи"
+// @Success 200 {object} RecordDto
+// @Failure 400 {string} string "некорректный id"
+// @Failure 404 {string} string "запись не найдена"
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records/{id} [get]
 func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,
@@ -126,6 +143,16 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// PostRecordHandler
+// @Summary Создать подписку
+// @Tags records
+// @Accept json
+// @Produce json
+// @Param request body RecordDto true "Данные подписки"
+// @Success 201 {object} RecordDto "Созданная запись"
+// @Failure 400 {string} string "некорректный JSON"
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records [post]
 func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,
@@ -160,6 +187,17 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// PutRecordHandler
+// @Summary Обновить подписку
+// @Tags records
+// @Accept json
+// @Param id path int true "ID записи"
+// @Param request body RecordDto true "Новые данные"
+// @Success 204 "No Content"
+// @Failure 400 {string} string "некорректный JSON или id"
+// @Failure 404 {string} string "запись не найдена"
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records/{id} [put]
 func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,
@@ -201,6 +239,15 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// DeleteRecordHandler
+// @Summary Удалить подписку
+// @Tags records
+// @Param id path int true "ID записи"
+// @Success 204 "No Content"
+// @Failure 400 {string} string "некорректный id"
+// @Failure 404 {string} string "запись не найдена"
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records/{id} [delete]
 func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,
@@ -228,6 +275,18 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetTotalPrice
+// @Summary Получить сумму подписок за период
+// @Tags records
+// @Produce json
+// @Param user_id query string false "UUID пользователя"
+// @Param service_name query string false "Название сервиса"
+// @Param from query string true "Начало периода (MM-YYYY)"
+// @Param to query string true "Конец периода (MM-YYYY)"
+// @Success 200 {object} map[string]int
+// @Failure 400 {string} string "некорректный формат даты"
+// @Failure 500 {string} string "внутренняя ошибка"
+// @Router /records/total [get]
 func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"method", r.Method,

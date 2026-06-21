@@ -2,7 +2,7 @@ services:
   subscriptions-service:
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: Dockerfile
+      dockerfile: cmd/api/Dockerfile
     container_name: subs-service
     environment:
       - SERVER_PORT=8080
@@ -31,3 +31,10 @@ services:
     image: migrate/migrate:v4.19.1
     volumes:
       - ${PROJECT_ROOT}/migrations:/migrations
+
+  swagger:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code

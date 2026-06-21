@@ -1,6 +1,12 @@
 package internal
 
-import "net/http"
+import (
+	"net/http"
+
+	_ "subscriptions-data-service/docs"
+
+	httpSwagger "github.com/swaggo/http-swagger"
+)
 
 func Router(h *recordHandler) *http.ServeMux {
 	mux := http.NewServeMux()
@@ -10,5 +16,7 @@ func Router(h *recordHandler) *http.ServeMux {
 	mux.HandleFunc("PUT /records/{id}", h.PutRecordHandler)
 	mux.HandleFunc("DELETE /records/{id}", h.DeleteRecordHandler)
 	mux.HandleFunc("GET /records/total", h.GetTotalPrice)
+
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	return mux
 }

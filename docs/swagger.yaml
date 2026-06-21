@@ -56,7 +56,7 @@ paths:
           schema:
             $ref: '#/definitions/internal.RecordDto'
         "400":
-          description: некорректный JSON
+          description: некорректный JSON или диапазон дат
           schema:
             type: string
         "500":
@@ -140,7 +140,7 @@ paths:
         "204":
           description: No Content
         "400":
-          description: некорректный JSON или id
+          description: некорректный JSON, id или диапазон дат
           schema:
             type: string
         "404":
@@ -185,7 +185,7 @@ paths:
               type: integer
             type: object
         "400":
-          description: некорректный формат даты
+          description: некорректный формат даты или диапазон дат
           schema:
             type: string
         "500":

@@ -72,7 +72,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "некорректный JSON",
+                        "description": "некорректный JSON или диапазон дат",
                         "schema": {
                             "type": "string"
                         }
@@ -134,7 +134,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "некорректный формат даты",
+                        "description": "некорректный формат даты или диапазон дат",
                         "schema": {
                             "type": "string"
                         }
@@ -224,7 +224,7 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "некорректный JSON или id",
+                        "description": "некорректный JSON, id или диапазон дат",
                         "schema": {
                             "type": "string"
                         }

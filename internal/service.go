@@ -2,8 +2,11 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+var ErrInvalidDates = errors.New("invalid dates")
 
 type recordService struct {
 	repo *recordRepository
@@ -24,10 +27,16 @@ func (s *recordService) GetByID(ctx context.Context, id int) (Record, error) {
 }
 
 func (s *recordService) Create(ctx context.Context, record Record) (Record, error) {
+	if record.EndDate != nil && record.EndDate.Before(record.StartDate) {
+		return Record{}, ErrInvalidDates
+	}
 	return s.repo.Create(ctx, record)
 }
 
 func (s *recordService) Update(ctx context.Context, id int, record Record) error {
+	if record.EndDate != nil && record.EndDate.Before(record.StartDate) {
+		return ErrInvalidDates
+	}
 	return s.repo.Update(ctx, id, record)
 }
 
@@ -57,6 +66,9 @@ func countMonth(from, to, start time.Time, end *time.Time) int {
 }
 
 func (s *recordService) TotalPrice(ctx context.Context, userIDStr string, serviceName string, from time.Time, to time.Time) (int, error) {
+	if to.Before(from) {
+		return 0, ErrInvalidDates
+	}
 	pricesWithDates, err := s.repo.GetPricesInRange(ctx, userIDStr, serviceName, from, to)
 	if err != nil {
 		return 0, err

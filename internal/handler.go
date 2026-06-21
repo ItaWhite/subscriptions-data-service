@@ -150,7 +150,7 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Produce json
 // @Param request body RecordDto true "Данные подписки"
 // @Success 201 {object} RecordDto "Созданная запись"
-// @Failure 400 {string} string "некорректный JSON"
+// @Failure 400 {string} string "некорректный JSON или диапазон дат"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [post]
 func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request) {
@@ -173,7 +173,12 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	record, err = h.service.Create(r.Context(), record)
-	if err != nil {
+	switch {
+	case errors.Is(err, ErrInvalidDates):
+		logger.Warn("invalid dates", "error", err)
+		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
+		return
+	case err != nil:
 		logger.Error("create record failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
@@ -194,7 +199,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 // @Param id path int true "ID записи"
 // @Param request body RecordDto true "Новые данные"
 // @Success 204 "No Content"
-// @Failure 400 {string} string "некорректный JSON или id"
+// @Failure 400 {string} string "некорректный JSON, id или диапазон дат"
 // @Failure 404 {string} string "запись не найдена"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/{id} [put]
@@ -226,6 +231,10 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 	}
 	err = h.service.Update(r.Context(), id, record)
 	switch {
+	case errors.Is(err, ErrInvalidDates):
+		logger.Warn("invalid dates", "id", id, "error", err)
+		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
+		return
 	case errors.Is(err, ErrRecordNotFound):
 		logger.Warn("record not found", "id", id)
 		http.Error(w, "запись не найдена", http.StatusNotFound)
@@ -284,7 +293,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 // @Param from query string true "Начало периода (MM-YYYY)"
 // @Param to query string true "Конец периода (MM-YYYY)"
 // @Success 200 {object} map[string]int
-// @Failure 400 {string} string "некорректный формат даты"
+// @Failure 400 {string} string "некорректный формат даты или диапазон дат"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/total [get]
 func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
@@ -310,7 +319,12 @@ func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	total, err := h.service.TotalPrice(r.Context(), userIDStr, serviceName, from, to)
-	if err != nil {
+	switch {
+	case errors.Is(err, ErrInvalidDates):
+		logger.Warn("invalid date range", "from", from, "to", to)
+		http.Error(w, "некорректный диапазон дат", http.StatusBadRequest)
+		return
+	case err != nil:
 		logger.Error("get total price failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return

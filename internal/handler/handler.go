@@ -83,22 +83,25 @@ func toDto(record model.Record) model.RecordDto {
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [get]
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
-	recordList, err := h.service.GetAll(r.Context())
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
+	recordList, err := h.service.GetAll(ctx)
+
 	if err != nil {
 		logger.Error("get records failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	dtoList := make([]model.RecordDto, 0, len(recordList))
+
 	for _, r := range recordList {
 		dtoList = append(dtoList, toDto(r))
 	}
+
 	logger.Info("records found", "count", len(dtoList))
+
 	err = json.NewEncoder(w).Encode(dtoList)
 	if err != nil {
 		logger.Error("error encoding dtoList", "error", err)
@@ -116,18 +119,18 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/{id} [get]
 func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
+
 	if err != nil {
 		logger.Warn("invalid id", "strId", strId)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
-	record, err := h.service.GetByID(r.Context(), id)
+
+	record, err := h.service.GetByID(ctx, id)
 	switch {
 	case errors.Is(err, serviceErrors.ErrRecordNotFound):
 		logger.Warn("record not found", "id", id)
@@ -138,8 +141,10 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Info("record found", "id", id)
 	w.Header().Set("Content-Type", "application/json")
+
 	err = json.NewEncoder(w).Encode(toDto(record))
 	if err != nil {
 		logger.Error("error encoding dto", "err", err)
@@ -157,25 +162,27 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [post]
 func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
+
 	var dto model.RecordDto
 	defer r.Body.Close()
+
 	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
+
 	record, err := toModel(dto)
 	if err != nil {
 		logger.Error("parse dto failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
-	record, err = h.service.Create(r.Context(), record)
+
+	record, err = h.service.Create(ctx, record)
 	switch {
 	case errors.Is(err, serviceErrors.ErrInvalidDates):
 		logger.Warn("invalid dates", "error", err)
@@ -186,9 +193,11 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Info("record created", "id", record.Id)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+
 	err = json.NewEncoder(w).Encode(toDto(record))
 	if err != nil {
 		logger.Error("error encoding dto", "err", err)
@@ -207,32 +216,36 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/{id} [put]
 func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
+
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
+
 	if err != nil {
 		logger.Warn("invalid id", "strId", strId)
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
+
 	var dto model.RecordDto
 	defer r.Body.Close()
+
 	err = json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		logger.Warn("invalid json", "error", err)
 		http.Error(w, "некорректный JSON", http.StatusBadRequest)
 		return
 	}
+
 	record, err := toModel(dto)
 	if err != nil {
 		logger.Error("parse dto failed", "id", id, "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
-	err = h.service.Update(r.Context(), id, record)
+
+	err = h.service.Update(ctx, id, record)
 	switch {
 	case errors.Is(err, serviceErrors.ErrInvalidDates):
 		logger.Warn("invalid dates", "id", id, "error", err)
@@ -247,6 +260,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Info("record updated", "id", id)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -261,10 +275,9 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/{id} [delete]
 func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
+
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -272,6 +285,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "некорректный id", http.StatusBadRequest)
 		return
 	}
+
 	err = h.service.Delete(r.Context(), id)
 	switch {
 	case errors.Is(err, serviceErrors.ErrRecordNotFound):
@@ -283,6 +297,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Info("record deleted", "id", id)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -300,10 +315,9 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/total [get]
 func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
-	logger := slog.With(
-		"method", r.Method,
-		"path", r.URL.Path,
-	)
+	ctx := r.Context()
+	logger := ctx.Value(loggerKey).(*slog.Logger)
+
 	q := r.URL.Query()
 	userIDStr := q.Get("user_id")
 	serviceName := q.Get("service_name")
@@ -315,12 +329,14 @@ func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
 		return
 	}
+
 	to, err := parseMonthYear(toStr)
 	if err != nil {
 		logger.Warn("invalid date", "toStr", toStr)
 		http.Error(w, "некорректный формат даты", http.StatusBadRequest)
 		return
 	}
+
 	total, err := h.service.TotalPrice(r.Context(), userIDStr, serviceName, from, to)
 	switch {
 	case errors.Is(err, serviceErrors.ErrInvalidDates):
@@ -332,6 +348,7 @@ func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Info("total price calculated", "total", total)
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]int{"total": total})

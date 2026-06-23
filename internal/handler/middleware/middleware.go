@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	loggerKey = "logger"
+	LoggerKey = "logger"
 )
 
 func RequestID(next http.Handler) http.Handler {
@@ -29,7 +29,7 @@ func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := r.Header.Get("X-Request-ID")
 		logger := slog.With("request_id", requestID, "method", r.Method, "url", r.URL.String())
-		ctx := context.WithValue(r.Context(), loggerKey, logger)
+		ctx := context.WithValue(r.Context(), LoggerKey, logger)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -38,7 +38,7 @@ func Logger(next http.Handler) http.Handler {
 func Panic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		logger := ctx.Value(loggerKey).(*slog.Logger)
+		logger := ctx.Value(LoggerKey).(*slog.Logger)
 
 		defer func() {
 			p := recover()

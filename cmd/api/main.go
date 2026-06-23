@@ -43,9 +43,9 @@ func main() {
 	h := handler.NewRecordHandler(s)
 	mux := handler.Router(h)
 	chain := middleware.Chain(
-		middleware.Panic,
 		middleware.RequestID,
 		middleware.Logger,
+		middleware.Panic,
 	)
 
 	server := http.Server{

@@ -22,7 +22,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal.RecordDto"
+                                "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                             }
                         }
                     },
@@ -52,7 +52,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     }
                 ],
@@ -60,7 +60,7 @@
                     "201": {
                         "description": "Созданная запись",
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     },
                     "400": {
@@ -162,7 +162,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     },
                     "400": {
@@ -207,7 +207,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     }
                 ],
@@ -276,7 +276,7 @@
         }
     },
     "definitions": {
-        "internal.RecordDto": {
+        "subscriptions-data-service_internal_model.RecordDto": {
             "type": "object",
             "properties": {
                 "end_date": {

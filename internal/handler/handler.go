@@ -80,7 +80,7 @@ func toDto(record model.Record) model.RecordDto {
 // @Summary Получить список подписок
 // @Tags records
 // @Produce json
-// @Success 200 {array} RecordDto
+// @Success 200 {array} model.RecordDto
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [get]
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +115,7 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 // @Tags records
 // @Produce json
 // @Param id path int true "ID записи"
-// @Success 200 {object} RecordDto
+// @Success 200 {object} model.RecordDto
 // @Failure 400 {string} string "некорректный id"
 // @Failure 404 {string} string "запись не найдена"
 // @Failure 500 {string} string "внутренняя ошибка"
@@ -158,8 +158,8 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Tags records
 // @Accept json
 // @Produce json
-// @Param request body RecordDto true "Данные подписки"
-// @Success 201 {object} RecordDto "Созданная запись"
+// @Param request body model.RecordDto true "Данные подписки"
+// @Success 201 {object} model.RecordDto "Созданная запись"
 // @Failure 400 {string} string "некорректный JSON или диапазон дат"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [post]
@@ -211,7 +211,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 // @Tags records
 // @Accept json
 // @Param id path int true "ID записи"
-// @Param request body RecordDto true "Новые данные"
+// @Param request body model.RecordDto true "Новые данные"
 // @Success 204 "No Content"
 // @Failure 400 {string} string "некорректный JSON, id или диапазон дат"
 // @Failure 404 {string} string "запись не найдена"
@@ -304,7 +304,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetTotalPrice
+// GetTotalPriceHandler
 // @Summary Получить сумму подписок за период
 // @Tags records
 // @Produce json
@@ -316,7 +316,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 // @Failure 400 {string} string "некорректный формат даты или диапазон дат"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records/total [get]
-func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
+func (h *recordHandler) GetTotalPriceHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := ctx.Value(middleware.LoggerKey).(*slog.Logger)
 

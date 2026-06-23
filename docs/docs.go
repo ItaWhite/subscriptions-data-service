@@ -30,7 +30,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal.RecordDto"
+                                "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                             }
                         }
                     },
@@ -60,7 +60,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     }
                 ],
@@ -68,7 +68,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Созданная запись",
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     },
                     "400": {
@@ -170,7 +170,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     },
                     "400": {
@@ -215,7 +215,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal.RecordDto"
+                            "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                         }
                     }
                 ],
@@ -284,7 +284,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal.RecordDto": {
+        "subscriptions-data-service_internal_model.RecordDto": {
             "type": "object",
             "properties": {
                 "end_date": {

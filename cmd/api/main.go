@@ -41,11 +41,15 @@ func main() {
 	s := service.NewRecordService(r)
 	h := handler.NewRecordHandler(s)
 	mux := handler.Router(h)
-	middlewareMix := handler.RequestID(handler.Logger(handler.Panic(mux)))
+	chain := handler.Chain(
+		handler.Panic,
+		handler.RequestID,
+		handler.Logger,
+	)
 
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
-		Handler: middlewareMix,
+		Handler: chain(mux),
 	}
 
 	slog.Info("server started", "port", os.Getenv("SERVER_PORT"))

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"subscriptions-data-service/internal/handler"
+	"subscriptions-data-service/internal/handler/middleware"
 	"subscriptions-data-service/internal/repository"
 	"subscriptions-data-service/internal/service"
 	"time"
@@ -41,10 +42,10 @@ func main() {
 	s := service.NewRecordService(r)
 	h := handler.NewRecordHandler(s)
 	mux := handler.Router(h)
-	chain := handler.Chain(
-		handler.Panic,
-		handler.RequestID,
-		handler.Logger,
+	chain := middleware.Chain(
+		middleware.Panic,
+		middleware.RequestID,
+		middleware.Logger,
 	)
 
 	server := http.Server{

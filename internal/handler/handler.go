@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	serviceErrors "subscriptions-data-service/internal/errors"
+	"subscriptions-data-service/internal/handler/middleware"
 	"subscriptions-data-service/internal/model"
 	"subscriptions-data-service/internal/service"
 	"time"
@@ -84,7 +85,7 @@ func toDto(record model.Record) model.RecordDto {
 // @Router /records [get]
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 	recordList, err := h.service.GetAll(ctx)
 
 	if err != nil {
@@ -120,7 +121,7 @@ func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request
 // @Router /records/{id} [get]
 func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
 
@@ -163,7 +164,7 @@ func (h *recordHandler) GetRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Router /records [post]
 func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 
 	var dto model.RecordDto
 	defer r.Body.Close()
@@ -217,7 +218,7 @@ func (h *recordHandler) PostRecordHandler(w http.ResponseWriter, r *http.Request
 // @Router /records/{id} [put]
 func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
@@ -276,7 +277,7 @@ func (h *recordHandler) PutRecordHandler(w http.ResponseWriter, r *http.Request)
 // @Router /records/{id} [delete]
 func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 
 	strId := r.PathValue("id")
 	id, err := strconv.Atoi(strId)
@@ -316,7 +317,7 @@ func (h *recordHandler) DeleteRecordHandler(w http.ResponseWriter, r *http.Reque
 // @Router /records/total [get]
 func (h *recordHandler) GetTotalPrice(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := ctx.Value(loggerKey).(*slog.Logger)
+	logger := ctx.Value(middleware.loggerKey).(*slog.Logger)
 
 	q := r.URL.Query()
 	userIDStr := q.Get("user_id")

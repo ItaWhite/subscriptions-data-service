@@ -22,8 +22,18 @@ func NewRecordRepository(pool *pgxpool.Pool) *RecordRepository {
 	}
 }
 
-func (r *RecordRepository) GetAll(ctx context.Context) ([]model.Record, error) {
-	rows, err := r.db.Query(ctx, "select * from records;")
+func (r *RecordRepository) GetAll(ctx context.Context, limit, offset int) ([]model.Record, error) {
+	query := "select * from records order by id"
+	var args []any
+	if limit != 0 {
+		args = append(args, limit)
+		query += fmt.Sprintf(" limit $%d", len(args))
+	}
+	if offset != 0 {
+		args = append(args, offset)
+		query += fmt.Sprintf(" offset $%d", len(args))
+	}
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

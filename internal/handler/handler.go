@@ -80,16 +80,45 @@ func toDto(record model.Record) model.RecordDto {
 // @Summary Получить список подписок
 // @Tags records
 // @Produce json
+// @Param limit query int false "Количество записей"
+// @Param offset query int false "Смещение"
 // @Success 200 {array} model.RecordDto
+// @Failure 400 {string} string "некорректное число записей"
 // @Failure 500 {string} string "внутренняя ошибка"
 // @Router /records [get]
 func (h *recordHandler) GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := ctx.Value(middleware.LoggerKey).(*slog.Logger)
 
-	recordList, err := h.service.GetAll(ctx)
-
-	if err != nil {
+	q := r.URL.Query()
+	limitStr := q.Get("limit")
+	offsetStr := q.Get("offset")
+	limit, offset := 0, 0
+	if limitStr != "" {
+		l, err := strconv.Atoi(limitStr)
+		if err != nil {
+			logger.Warn("invalid limit", "limitStr", limitStr)
+			http.Error(w, "некорректное число записей", http.StatusBadRequest)
+			return
+		}
+		limit = l
+	}
+	if offsetStr != "" {
+		o, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			logger.Warn("invalid offset", "offsetStr", offsetStr)
+			http.Error(w, "некорректное число записей", http.StatusBadRequest)
+			return
+		}
+		offset = o
+	}
+	recordList, err := h.service.GetAll(ctx, limit, offset)
+	switch {
+	case errors.Is(err, serviceErrors.ErrInvalidArgument):
+		logger.Warn("invalid argument", "err", err)
+		http.Error(w, "некорректное число записей", http.StatusBadRequest)
+		return
+	case err != nil:
 		logger.Error("get records failed", "error", err)
 		http.Error(w, "внутренняя ошибка", http.StatusInternalServerError)
 		return

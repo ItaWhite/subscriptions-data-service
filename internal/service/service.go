@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	serviceErrors "subscriptions-data-service/internal/errors"
 	"subscriptions-data-service/internal/model"
 	"subscriptions-data-service/internal/repository"
@@ -18,8 +19,14 @@ func NewRecordService(r *repository.RecordRepository) *RecordService {
 	}
 }
 
-func (s *RecordService) GetAll(ctx context.Context) ([]model.Record, error) {
-	return s.repo.GetAll(ctx)
+func (s *RecordService) GetAll(ctx context.Context, limit, offset int) ([]model.Record, error) {
+	if limit < 0 {
+		return nil, fmt.Errorf("negative limit: %w", serviceErrors.ErrInvalidArgument)
+	}
+	if offset < 0 {
+		return nil, fmt.Errorf("negative offset: %w", serviceErrors.ErrInvalidArgument)
+	}
+	return s.repo.GetAll(ctx, limit, offset)
 }
 
 func (s *RecordService) GetByID(ctx context.Context, id int) (model.Record, error) {

@@ -14,7 +14,7 @@ func Router(h *recordHandler) *http.ServeMux {
 	mux.HandleFunc("POST /records", h.PostRecordHandler)
 	mux.HandleFunc("PUT /records/{id}", h.PutRecordHandler)
 	mux.HandleFunc("DELETE /records/{id}", h.DeleteRecordHandler)
-	mux.HandleFunc("GET /records/total", h.GetTotalPrice)
+	mux.HandleFunc("GET /records/total", h.GetTotalPriceHandler)
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	return mux

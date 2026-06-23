@@ -22,6 +22,15 @@ info:
 paths:
   /records:
     get:
+      parameters:
+      - description: Количество записей
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -31,6 +40,10 @@ paths:
             items:
               $ref: '#/definitions/subscriptions-data-service_internal_model.RecordDto'
             type: array
+        "400":
+          description: некорректное число записей
+          schema:
+            type: string
         "500":
           description: внутренняя ошибка
           schema:

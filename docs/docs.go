@@ -24,6 +24,20 @@ const docTemplate = `{
                     "records"
                 ],
                 "summary": "Получить список подписок",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Количество записей",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -32,6 +46,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/subscriptions-data-service_internal_model.RecordDto"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "некорректное число записей",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "500": {
